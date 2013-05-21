@@ -15,7 +15,7 @@ Gem::Specification.new do |s|
   s.add_dependency 'symboltable', '1.0.2'
 
   s.files   = Dir.glob("{bin,lib,spec}/**/*")
-  s.executables = ['astute']
+  s.executables = ['astute', 'openstack_system']
   s.require_path = 'lib'
 end
 
