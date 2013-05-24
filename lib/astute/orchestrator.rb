@@ -10,7 +10,7 @@ module Astute
     end
 
     def node_type(reporter, task_id, nodes, timeout=nil)
-      context = Context.new(task_id, reporter)
+      context = Context.new(task_id, proxy_reporter(reporter))
       uids = nodes.map {|n| n['uid']}
       systemtype = MClient.new(context, "systemtype", uids, check_result=false, timeout)
       systems = systemtype.get_type
@@ -26,8 +26,7 @@ module Astute
       raise "Nodes to deploy are not provided!" if nodes.empty?
       # Following line fixes issues with uids: it should always be string
       nodes.map { |x| x['uid'] = x['uid'].to_s }  # NOTE: perform that on environment['nodes'] initialization
-      proxy_reporter = ProxyReporter.new(up_reporter)
-      context = Context.new(task_id, proxy_reporter, @log_parser)
+      context = Context.new(task_id, proxy_reporter(up_reporter), @log_parser)
       deploy_engine_instance = @deploy_engine.new(context)
       Astute.logger.info "Using #{deploy_engine_instance.class} for deployment."
       begin
@@ -39,11 +38,17 @@ module Astute
     end
 
     def remove_nodes(reporter, task_id, nodes)
-      NodesRemover.new(Context.new(task_id, reporter), nodes).remove
+      NodesRemover.new(Context.new(task_id, proxy_reporter(reporter)), nodes).remove
     end
 
     def verify_networks(reporter, task_id, nodes)
-      Network.check_network(Context.new(task_id, reporter), nodes)
+      Network.check_network(Context.new(task_id, proxy_reporter(reporter)), nodes)
+    end
+
+    private
+
+    def proxy_reporter(reporter)
+      ProxyReporter.new(reporter)
     end
   end
 end
