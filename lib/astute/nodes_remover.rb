@@ -1,12 +1,20 @@
 module Astute
   class NodesRemover
+    attr_reader :fake
 
-    def initialize(ctx, nodes)
+    def initialize(ctx, nodes, options={})
+      @fake = options['fake']
       @ctx = ctx
       @nodes = NodesHash.build(nodes)
     end
 
     def remove
+      if fake
+        Astute.logger.debug("fake nodes removing: #{@nodes.uids}")
+        answer = {'nodes' => @nodes.nodes.map(&:to_hash)}
+        return answer
+      end
+
       # TODO(mihgen):  1. Nailgun should process node error message
       #   2. Should we rename nodes -> removed_nodes array?
       #   3. If exception is raised here, we should not fully fall into error, but only failed node

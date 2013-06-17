@@ -40,7 +40,7 @@ module Astute
       end
     end
 
-  private
+    private
 
     def node_validate(node)
       # Validate basic correctness of attributes.

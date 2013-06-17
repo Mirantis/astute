@@ -22,13 +22,13 @@ module Astute
       end
     end
 
-    def deploy(up_reporter, task_id, nodes, attrs)
+    def deploy(up_reporter, task_id, nodes, attrs, options={})
       raise "Nodes to deploy are not provided!" if nodes.empty?
       # Following line fixes issues with uids: it should always be string
       nodes.map { |x| x['uid'] = x['uid'].to_s }  # NOTE: perform that on environment['nodes'] initialization
       proxy_reporter = ProxyReporter.new(up_reporter)
       context = Context.new(task_id, proxy_reporter, @log_parser)
-      deploy_engine_instance = @deploy_engine.new(context)
+      deploy_engine_instance = @deploy_engine.new(context, 'fake' => options['fake'])
       Astute.logger.info "Using #{deploy_engine_instance.class} for deployment."
       begin
         @log_parser.prepare(nodes)
@@ -38,8 +38,8 @@ module Astute
       deploy_engine_instance.deploy(nodes, attrs)
     end
 
-    def remove_nodes(reporter, task_id, nodes)
-      NodesRemover.new(Context.new(task_id, reporter), nodes).remove
+    def remove_nodes(reporter, task_id, nodes, options={})
+      NodesRemover.new(Context.new(task_id, reporter), nodes, 'fake' => options['fake']).remove
     end
 
     def verify_networks(reporter, task_id, nodes)

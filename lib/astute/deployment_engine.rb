@@ -3,7 +3,9 @@ require 'timeout'
 
 module Astute
   class DeploymentEngine
-    def initialize(context)
+    attr_reader :fake
+    def initialize(context, options={})
+      @fake = options['fake']
       if self.class.superclass.name == 'Object'
         raise "Instantiation of this superclass is not allowed. Please subclass from #{self.class.name}."
       end
