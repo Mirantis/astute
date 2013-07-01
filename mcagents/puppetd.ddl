@@ -86,3 +86,18 @@ action "status", :description => "Get puppet agent's status" do
            :description => "String displaying agent status",
            :display_as => "Status"
 end
+
+action "apply", :description => "Run Puppet apply with custom site.pp",
+    display :always
+
+    input :modulepath,
+          :prompt         => 'modulepath',
+          :description    => 'Path to directory where puppet modules are',
+          :type           => :string,
+          :optional       => false
+    input :sitepp_content,
+          :prompt         => 'sitepp_content',
+          :description    => 'Content of site.pp',
+          :type           => :string,
+          :optional       => false
+

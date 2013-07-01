@@ -38,6 +38,7 @@ module MCollective
         @statefile = @config.pluginconf["puppetd.statefile"] || "/var/lib/puppet/state/state.yaml"
         @pidfile = @config.pluginconf["puppet.pidfile"] || "/var/run/puppet/agent.pid"
         @puppetd = @config.pluginconf["puppetd.puppetd"] || "/usr/bin/puppet agent"
+        @puppetapply = @config.pluginconf["puppetd.puppetapply"] || "/usr/bin/puppet apply"
         @last_summary = @config.pluginconf["puppet.summary"] || "/var/lib/puppet/state/last_run_summary.yaml"
       end
 
@@ -62,7 +63,40 @@ module MCollective
         set_status
       end
 
+      action "apply" do
+        puppet_apply
+      end
+
       private
+
+      def puppet_apply
+        validate :modulepath, String
+        validate :sitepp_content, String
+        modulepath = request[:modulepath]
+        sitepp_content = request[:sitepp_content]
+        sitepp = ''
+        Tempfile.open "puppet_apply" do |f|
+          f.write(sitepp_content)
+          sitepp = f.path
+        end
+        reply[:sitepp] = sitepp
+
+        cmd = "#{@puppetapply} --modulepath #{modulepath} --logdest syslog #{sitepp}"
+        pid = fork { `#{cmd}` }
+        Process.detach(pid)
+        reply[:puppet_pid] = pid
+      end
+
+      def puppet_apply_status
+        validate :puppet_pid, typecheck
+
+
+
+
+
+
+
+
 
       def last_run_summary
         # wrap into begin..rescue: fixes PRD-252
