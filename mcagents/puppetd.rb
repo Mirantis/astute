@@ -67,6 +67,11 @@ module MCollective
         puppet_apply
       end
 
+      action "apply_status" do
+        puppet_apply_status
+        last_run_summary
+      end
+
       private
 
       def puppet_apply
@@ -89,14 +94,11 @@ module MCollective
 
       def puppet_apply_status
         validate :puppet_pid, typecheck
-
-
-
-
-
-
-
-
+        running = is_pid_alive(:puppet_pid, "#{@puppetapply}")
+        reply[:status] = running ? 'running' : 'stopped'
+        reply[:running] = running ? 1 : 0
+        reply[:stopped] = running ? 0 : 1
+      end
 
       def last_run_summary
         # wrap into begin..rescue: fixes PRD-252
@@ -240,6 +242,12 @@ module MCollective
       def puppet_agent_pid
         result = `ps -C puppet -o pid,comm --no-headers`.lines.first
         result && result.strip.split(' ')[0].to_i
+      end
+
+      def is_pid_alive(pid, command)
+        result = `ps -o command, pid --no-headers --pid #{pid}|grep '^#{command}`.lines.first
+        return true if result
+        return false
       end
     end
   end

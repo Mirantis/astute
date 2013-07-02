@@ -95,9 +95,44 @@ action "apply", :description => "Run Puppet apply with custom site.pp",
           :description    => 'Path to directory where puppet modules are',
           :type           => :string,
           :optional       => false
+
     input :sitepp_content,
           :prompt         => 'sitepp_content',
           :description    => 'Content of site.pp',
           :type           => :string,
           :optional       => false
 
+    output  :sitepp,
+            :description  => "Name of temporary file with site.pp content",
+            :display_as   => "Site.pp filename"
+
+    output  :puppet_pid,
+            :description  => 'PID of Puppet apply instance',
+            :display_as   => 'Puppet PID'
+end
+
+action "apply_status", :description => 'Return status of Puppet apply by PID'
+    display :always
+
+    input :puppet_pid,
+          :prompt         => 'puppet_pid',
+          :description    => 'PID of running Puppet apply',
+          :type           => :fixnum,
+          :optional       => false
+
+    output :status,
+           :description => "The status of the puppet apply: running or stopped",
+           :display_as => "Status"
+
+    output :running,
+           :description => "Whether puppet apply is running",
+           :display_as => "Running"
+
+    output :stopped,
+           :description => "Whether puppet apply is stopped",
+           :display_as => "Stopped"
+
+    output :lastrun,
+           :description => "When puppet apply last ran",
+           :display_as => "Last Run"
+end
