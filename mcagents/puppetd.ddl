@@ -87,19 +87,23 @@ action "status", :description => "Get puppet agent's status" do
            :display_as => "Status"
 end
 
-action "apply", :description => "Run Puppet apply with custom site.pp",
+action "apply", :description => "Run Puppet apply with custom site.pp" do
     display :always
 
     input :modulepath,
           :prompt         => 'modulepath',
           :description    => 'Path to directory where puppet modules are',
           :type           => :string,
+          :validation     => '.*',
+          :maxlength      => 0,
           :optional       => false
 
     input :sitepp_content,
           :prompt         => 'sitepp_content',
           :description    => 'Content of site.pp',
           :type           => :string,
+          :validation     => '.*',
+          :maxlength      => 0,
           :optional       => false
 
     output  :sitepp,
@@ -111,13 +115,13 @@ action "apply", :description => "Run Puppet apply with custom site.pp",
             :display_as   => 'Puppet PID'
 end
 
-action "apply_status", :description => 'Return status of Puppet apply by PID'
+action "apply_status", :description => 'Return status of Puppet apply by PID' do
     display :always
 
     input :puppet_pid,
           :prompt         => 'puppet_pid',
           :description    => 'PID of running Puppet apply',
-          :type           => :fixnum,
+          :type           => :integer,
           :optional       => false
 
     output :status,

@@ -93,8 +93,8 @@ module MCollective
       end
 
       def puppet_apply_status
-        validate :puppet_pid, typecheck
-        running = is_pid_alive(:puppet_pid, "#{@puppetapply}")
+        validate :puppet_pid, Integer
+        running = is_pid_alive(request[:puppet_pid], "^[^ ]*ruby [^ ]*mcollectived")
         reply[:status] = running ? 'running' : 'stopped'
         reply[:running] = running ? 1 : 0
         reply[:stopped] = running ? 0 : 1
@@ -245,7 +245,7 @@ module MCollective
       end
 
       def is_pid_alive(pid, command)
-        result = `ps -o command, pid --no-headers --pid #{pid}|grep '^#{command}`.lines.first
+        result = `ps -o command,pid --no-headers --pid #{pid}|grep '#{command}'`.lines.first
         return true if result
         return false
       end
