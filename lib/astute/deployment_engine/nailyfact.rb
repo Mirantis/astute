@@ -62,7 +62,7 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
       metadata['fixed_interface'] = get_fixed_interface(node)
     end
 
-    Astute::Metadata.publish_facts(@ctx, node['uid'], metadata)
+    Astute::Metadata.publish_facts(@ctx, node['uid'], metadata, 'fake' => fake)
   end
 
   def deploy_piece(nodes, attrs, retries=2, change_node_status=true)
@@ -73,6 +73,7 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     nodes.each do |node|
       create_facts(node, attrs)
     end
+    return if fake
     Astute.logger.info "#{@ctx.task_id}: All required attrs/metadata passed via facts extension. Starting deployment."
 
     Astute::PuppetdDeployer.deploy(@ctx, nodes, retries, change_node_status)

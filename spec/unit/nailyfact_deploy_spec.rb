@@ -278,7 +278,7 @@ describe "NailyFact DeploymentEngine" do
           'management_address' => '192.168.0.2'
         }
 
-        Astute::Metadata.expects(:publish_facts).with(@ctx, node['uid'], expect)
+        Astute::Metadata.expects(:publish_facts).with(@ctx, node['uid'], expect, 'fake' => nil)
         @deploy_engine.create_facts(node, attrs)
       end
     end
