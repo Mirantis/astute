@@ -38,6 +38,7 @@ module MCollective
         @statefile = @config.pluginconf["puppetd.statefile"] || "/var/lib/puppet/state/state.yaml"
         @pidfile = @config.pluginconf["puppet.pidfile"] || "/var/run/puppet/agent.pid"
         @puppetd = @config.pluginconf["puppetd.puppetd"] || "/usr/bin/puppet agent"
+        @puppetdtee = @config.pluginconf["puppetd.puppetdtee"] || "/var/log/puppetd_run.log"
         @last_summary = @config.pluginconf["puppet.summary"] || "/var/lib/puppet/state/last_run_summary.yaml"
       end
 
@@ -168,7 +169,7 @@ module MCollective
         cmd = cmd.join(" ")
 
         output = reply[:output] || ''
-        run(cmd, :stdout => :output, :chomp => true)
+        run("#{cmd} 2>&1 | tee #{@puppetdtee}", :stdout => :output, :stderr => :output, :chomp => true)
         reply[:output] = "Called #{cmd}, " + output + (reply[:output] || '')
       end
 
