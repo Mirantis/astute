@@ -6,6 +6,8 @@ metadata :name        => "sshkey",
          :url         => "http://mirantis.com",
          :timeout     => 10
 
+# KEYS #
+
 action "generate_key", :description => "Generate new SSH key pair for a user" do
   display :always
 
@@ -99,9 +101,75 @@ action "upload_key", :description => "Upload new SSH key pair of the given user"
         :validation  => '^.+$',
         :optional    => false,
         :maxlength   => 0
+
   input :overwrite,
         :prompt      => "Force overwrite",
         :description => "Overwrite already generated keys",
+        :type        => :boolean,
+        :optional    => false,
+        :default     => false
+
+  output :msg,
+         :description => "Report message",
+         :display_as  => "Message"
+end
+
+# ACCESS #
+
+action "download_access", :description => "Downloads authorized_keys for given user and returns its contents." do
+  display :always
+
+  input :user,
+        :prompt      => "User name",
+        :description => "Name of user to generate keys for",
+        :type        => :string,
+        :validation  => '^[a-z_][a-z0-9_]*$',
+        :optional    => false,
+        :maxlength   => 30
+
+  output :authorized_keys,
+         :description => "Authorized_keys file contents",
+         :display_as  => "Authorized_keys"
+end
+
+action "delete_access", :description => "Delete authorized_keys file for given user to prevent all access." do
+  display :always
+
+  input :user,
+        :prompt      => "User name",
+        :description => "Name of user to generate keys for",
+        :type        => :string,
+        :validation  => '^[a-z_][a-z0-9_]*$',
+        :optional    => false,
+        :maxlength   => 30
+
+  output :msg,
+         :description => "Report message",
+         :display_as  => "Message"
+end
+
+action "upload_access", :description => "Upload new SSH key pair of the given user" do
+  display :always
+
+  input :user,
+        :prompt      => "User name",
+        :description => "Name of user to generate keys for",
+        :type        => :string,
+        :validation  => '^[a-z_][a-z0-9_]*$',
+        :optional    => false,
+        :maxlength   => 30
+
+  input :authorized_keys,
+        :prompt      => "Authorized_keys:",
+        :description => "Authorized_keys file contents",
+        :type        => :string,
+        :validation  => '^.+$',
+        :optional    => false,
+        :maxlength   => 0
+
+  input :overwrite,
+        :prompt      => "Force overwrite",
+        :description => "Overwrite already present file",
         :type        => :boolean,
         :optional    => false,
         :default     => false

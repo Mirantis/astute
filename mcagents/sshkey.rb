@@ -4,6 +4,7 @@
 # Examples:
 # # get help for this agent
 # $ mco plugin doc sshkey
+#
 # # generate new ssh key for user apache
 # # and overwrite existing if present
 # $ mco rpc sshkey generate_key user=apache overwrite=true
@@ -13,7 +14,15 @@
 # $ mco rpc sshkey delete_key user=apache
 # # upload precreated ssh key
 # # overwrite old if present
-# $ mco rpc sshkey upload_key user=apache private_key=(...) public_key=(...) overwrite=true
+# $ mco rpc sshkey upload_key user=apache private_key='(...)' public_key='(...)' overwrite=true
+#
+# # upload authorized_keys file
+# # overwrite old if present
+# $ mco rpc sshkey upload_access user=apache authorized_kyes='(...)' overwrite=true
+# # download authorized_keys file
+# $ mco rpc sshkey download_access user=apache
+# # delete authorized_keys file
+# $ mco rpc sshkey delete_access user=apache
 
 require 'etc'
 
@@ -101,10 +110,15 @@ module MCollective
         File.delete public_key_file if File.exist? public_key_file
       end
 
+      def delete_authorized_keys_file
+        File.delete authorized_keys_file if File.exist? authorized_keys_file
+      end
+
       action "generate_key" do
         # Generates new SSH key for the given user
         # Overwrites existing key in overwrite option is set
         # does nothing if key exists and option is not set
+
         validate :overwrite, :boolean
 
         begin
@@ -133,6 +147,7 @@ module MCollective
         # does nothing if no keys are present and return message
 
         begin
+          # report that file is not present or delete and report deletion
           if File.exist? private_key_file
             delete_private_key_files
           else
@@ -171,6 +186,10 @@ module MCollective
       end
 
       action "upload_key" do
+        # uploads new ssh key pair for the given user
+        # returns error if keys already exists and overwrite is not set
+        # if overwrite is set forces upload and replaces old keys
+
         validate :private_key, :string
         validate :public_key, :string
         validate :overwrite, :boolean
@@ -180,6 +199,7 @@ module MCollective
             reply.fail! "Key #{private_key_file} already exists! Use overwrite=true to force upload."
           end
 
+          # check for .ssh folder, upload file and fix access and ownership
           check_ssh_dir
           fix_ssh_permissions
           File.open(private_key_file, 'w') { |file| file.write(request.data[:private_key]) }
@@ -191,16 +211,63 @@ module MCollective
         reply[:msg] = "Key #{private_key_file} was uploaded!"
       end
 
-      action "set_access" do
-        # todo
+      action "download_access" do
+        # downloads authorized_keys file for given user
+        # returns error if file is not present
+
+        begin
+          #check if authorized_keys file is present
+          reply.fail! "File #{authorized_keys_file} doesn't exist!" unless File.exist? authorized_keys_file
+          #read the file
+          authorized_keys = File.read authorized_keys_file
+          #and return it as string
+          reply[:authorized_keys] = authorized_keys
+        rescue => e
+          reply.fail! e.to_s
+        end
       end
 
-      action "get_access" do
-        # todo
+      action "upload_access" do
+        # uploads new authorized_keys file for given user
+        # if file is present and overwrite is not set returns error
+        # forces upload if overwrite is set
+
+        validate :authorized_keys, :string
+        validate :overwrite, :boolean
+
+        begin
+          if File.exist? authorized_keys_file and !request.data[:overwrite]
+            reply.fail! "Key #{authorized_keys_file} already exists! Use overwrite=true to force upload."
+          end
+
+          # check for .ssh folder, upload file and fix access and ownership
+          check_ssh_dir
+          fix_ssh_permissions
+          File.open(authorized_keys_file, 'w') { |file| file.write(request.data[:authorized_keys]) }
+          fix_ssh_permissions
+        rescue => e
+          reply.fail! e.to_s
+        end
+        reply[:msg] = "File #{authorized_keys_file} was uploaded!"
       end
 
-      action "remove_access" do
-        # todo
+      action "delete_access" do
+        # removes authorized_keys file for given user
+        # to prevent key based ssh login
+        # does nothing if no file present
+
+        begin
+          # report that file is not present or delete and report deletion
+          if File.exist? authorized_keys_file
+            delete_authorized_keys_file
+          else
+            reply[:msg] = "File #{authorized_keys_file} already doesn't exist!"
+            return
+          end
+        rescue => e
+          reply.fail! e.to_s
+        end
+        reply[:msg] = "File #{authorized_keys_file} was deleted!"
       end
 
     end
