@@ -1,8 +1,8 @@
 metadata :name        => "sshkey",
          :description => "SSH key management and distribution agent. It can generate new ssh keys for given user, download, upload keys and manage authorized_keys file too.",
-         :author      => "Mirantis",
-         :license     => "Apache",
-         :version     => "1.0",
+         :author      => "Mirantis Inc",
+         :license     => "Apache License 2.0",
+         :version     => "0.0.1",
          :url         => "http://mirantis.com",
          :timeout     => 10
 
@@ -44,7 +44,7 @@ action "delete_key", :description => "Delete SSH key of given user" do
 
   input :user,
         :prompt      => "User name",
-        :description => "Name of user to generate keys for",
+        :description => "Name of user whose keys will be deleted",
         :type        => :string,
         :validation  => '^[a-z_][a-z0-9_]*$',
         :optional    => false,
@@ -60,7 +60,7 @@ action "download_key", :description => "Download SSH key pair of the given user"
 
   input :user,
         :prompt      => "User name",
-        :description => "Name of user to generate keys for",
+        :description => "Name of user to download keys from",
         :type        => :string,
         :validation  => '^[a-z_][a-z0-9_]*$',
         :optional    => false,
@@ -80,7 +80,7 @@ action "upload_key", :description => "Upload new SSH key pair of the given user"
 
   input :user,
         :prompt      => "User name",
-        :description => "Name of user to generate keys for",
+        :description => "Name of user to upload keys to",
         :type        => :string,
         :validation  => '^[a-z_][a-z0-9_]*$',
         :optional    => false,
@@ -121,7 +121,7 @@ action "download_access", :description => "Downloads authorized_keys for given u
 
   input :user,
         :prompt      => "User name",
-        :description => "Name of user to generate keys for",
+        :description => "Name of user to download authorized_keys from",
         :type        => :string,
         :validation  => '^[a-z_][a-z0-9_]*$',
         :optional    => false,
@@ -137,7 +137,7 @@ action "delete_access", :description => "Delete authorized_keys file for given u
 
   input :user,
         :prompt      => "User name",
-        :description => "Name of user to generate keys for",
+        :description => "Name of user whose authorized_keys file will be deleted",
         :type        => :string,
         :validation  => '^[a-z_][a-z0-9_]*$',
         :optional    => false,
@@ -153,7 +153,7 @@ action "upload_access", :description => "Upload new SSH key pair of the given us
 
   input :user,
         :prompt      => "User name",
-        :description => "Name of user to generate keys for",
+        :description => "Name of user to upload authorized_keys to",
         :type        => :string,
         :validation  => '^[a-z_][a-z0-9_]*$',
         :optional    => false,

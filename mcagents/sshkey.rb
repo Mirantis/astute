@@ -105,7 +105,7 @@ module MCollective
         Dir.mkdir ssh_dir unless File.exist? ssh_dir
       end
 
-      def delete_private_key_files
+      def delete_key_pair_files
         File.delete private_key_file if File.exist? private_key_file
         File.delete public_key_file if File.exist? public_key_file
       end
@@ -117,16 +117,16 @@ module MCollective
       action "generate_key" do
         # Generates new SSH key for the given user
         # Overwrites existing key in overwrite option is set
-        # does nothing if key exists and option is not set
+        # fails if key exists and option is not set
 
         validate :overwrite, :boolean
 
         begin
           # delete existing keys if overwrite is set
-          # or return error if keys exist and overwirute is not set
+          # or return error if keys exist and overwrite is not set
           if File.exist? private_key_file
             if request.data[:overwrite]
-              delete_private_key_files
+              delete_key_pair_files
             else
               reply.fail! "Key #{private_key_file} already exists! Use overwrite=true to force generation."
             end
@@ -136,6 +136,7 @@ module MCollective
           generate_command = "ssh-keygen -b #{key_length} -t rsa -N '' -f #{private_key_file}"
           check_ssh_dir
           reply[:status] = run(generate_command, :stdout => :stdout, :stderr => :stderr)
+          # and fix generated key permissions
           fix_ssh_permissions
         rescue => e
           reply.fail! e.to_s
@@ -149,7 +150,7 @@ module MCollective
         begin
           # report that file is not present or delete and report deletion
           if File.exist? private_key_file
-            delete_private_key_files
+            delete_key_pair_files
           else
             reply[:msg] = "Key #{private_key_file} already doesn't exist!"
             return
@@ -163,6 +164,7 @@ module MCollective
       action "download_key" do
         # downloads ssh key pair for given user
         # and returns them to caller
+        # fails if no keys present
 
         begin
           # check if both keys are present
@@ -201,9 +203,9 @@ module MCollective
 
           # check for .ssh folder, upload file and fix access and ownership
           check_ssh_dir
-          fix_ssh_permissions
           File.open(private_key_file, 'w') { |file| file.write(request.data[:private_key]) }
           File.open(public_key_file, 'w') { |file| file.write(request.data[:public_key]) }
+          # and fix ssh uploaded files permissions
           fix_ssh_permissions
         rescue => e
           reply.fail! e.to_s
@@ -242,8 +244,8 @@ module MCollective
 
           # check for .ssh folder, upload file and fix access and ownership
           check_ssh_dir
-          fix_ssh_permissions
           File.open(authorized_keys_file, 'w') { |file| file.write(request.data[:authorized_keys]) }
+          # and fix ssh uploaded file permissions
           fix_ssh_permissions
         rescue => e
           reply.fail! e.to_s

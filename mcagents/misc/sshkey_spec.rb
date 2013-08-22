@@ -1,11 +1,4 @@
-require 'spec_helper'
-require 'mcollective'
-include MCollective::RPC
-require 'sshkey'
-
-describe MCollective::Agent::Sshkey do
-  let(:agent) { MCollective::Agent::Sshkey.new }
-  subject { agent }
+describe 'Sshkey' do
 
   describe 'generate_key action' do
     it 'generates ssh key' do
