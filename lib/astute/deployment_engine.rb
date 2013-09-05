@@ -46,7 +46,7 @@ module Astute
         {
           'fqdn'                 => n['fqdn'],
           'name'                 => n['fqdn'].split(/\./)[0],
-          'role'                 => n['role'],
+          'roles'                => n['roles'],
           'internal_address'     => n['network_data'].select {|nd| select_ifaces(nd['name'], 'management')}[0]['ip'].split(/\//)[0],
           'internal_br'          => n['internal_br'],
           'internal_netmask'     => n['network_data'].select {|nd| select_ifaces(nd['name'], 'management')}[0]['netmask'],

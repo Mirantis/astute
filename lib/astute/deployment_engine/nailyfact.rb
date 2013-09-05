@@ -40,7 +40,7 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     interfaces = node['meta']['interfaces']
     network_data_puppet = calculate_networks(node_network_data, interfaces)
     attrs_to_puppet = {
-      'role' => node['role'],
+      'roles' => node['roles'],
       'uid'  => node['uid'],
       'network_data' => network_data_puppet.to_json
     }
