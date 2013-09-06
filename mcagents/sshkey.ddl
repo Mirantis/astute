@@ -114,6 +114,45 @@ action "upload_key", :description => "Upload new SSH key pair of the given user"
          :display_as  => "Message"
 end
 
+action "distribute_keys", :description => "Distribute SSH keys to temporary location before Puppet deploymnet" do
+  display :always
+
+  input :public_key,
+        :prompt      => "Public key",
+        :description => "Public SSH key part",
+        :type        => :string,
+        :validation  => '^.+$',
+        :optional    => false,
+        :maxlength   => 0
+
+  input :private_key,
+        :prompt      => "Private key",
+        :description => "Private SSH key part",
+        :type        => :string,
+        :validation  => '^.+$',
+        :optional    => false,
+        :maxlength   => 0
+
+  input :path,
+        :prompt      => "Path to save distributed keys",
+        :description => "Where should distributed keys be saved?",
+        :type        => :string,
+        :validation  => '^.+$',
+        :optional    => false,
+        :maxlength   => 0
+
+  input :overwrite,
+        :prompt      => "Force overwrite",
+        :description => "Overwrite already generated keys",
+        :type        => :boolean,
+        :optional    => false,
+        :default     => false
+
+  output :msg,
+         :description => "Report message",
+         :display_as  => "Message"
+end
+
 # ACCESS #
 
 action "download_access", :description => "Downloads authorized_keys for given user and returns its contents." do

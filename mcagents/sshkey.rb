@@ -25,6 +25,7 @@
 # $ mco rpc sshkey delete_access user=apache
 
 require 'etc'
+require 'fileutils'
 
 module MCollective
   module Agent
@@ -116,7 +117,7 @@ module MCollective
 
       action "generate_key" do
         # Generates new SSH key for the given user
-        # Overwrites existing key in overwrite option is set
+        # Overwrites existing key if overwrite option is set
         # fails if key exists and option is not set
 
         validate :overwrite, :boolean
@@ -201,6 +202,10 @@ module MCollective
             reply.fail! "Key #{private_key_file} already exists! Use overwrite=true to force upload."
           end
 
+          if File.exist? public_key_file and !request.data[:overwrite]
+            reply.fail! "Key #{public_key_file} already exists! Use overwrite=true to force upload."
+          end
+
           # check for .ssh folder, upload file and fix access and ownership
           check_ssh_dir
           File.open(private_key_file, 'w') { |file| file.write(request.data[:private_key]) }
@@ -213,16 +218,52 @@ module MCollective
         reply[:msg] = "Key #{private_key_file} was uploaded!"
       end
 
+      action 'distribute_keys' do
+        # this action is used to distribute initially generated
+        # SSH keys from master node to all managed nodes
+        # these keys will later be installed into user's home
+        # directories by speciall Puppet resource
+
+        validate :private_key, :string
+        validate :public_key, :string
+        validate :path, :shellsafe
+        validate :overwrite, :boolean
+
+        begin
+          path = request.data[:path]
+          private_key_distribute = "#{path}/#{key_name}"
+          public_key_distribute = "#{path}/#{key_name}.pub"
+
+          if File.exist? private_key_distribute and !request.data[:overwrite]
+            reply.fail! "Key #{private_key_distribute} already exists! Use overwrite=true to force upload."
+          end
+
+          if File.exist? public_key_distribute and !request.data[:overwrite]
+            reply.fail! "Key #{public_key_distribute} already exists! Use overwrite=true to force upload."
+          end
+
+          # first create target directory on managed server
+          FileUtils.mkdir_p path unless File.exist? path
+
+          # then we can create key files and save their contents
+          File.open(private_key_distribute, 'w') { |file| file.write(request.data[:private_key]) }
+          File.open(public_key_distribute, 'w') { |file| file.write(request.data[:public_key]) }
+        rescue => e
+          reply.fail! e.to_s
+        end
+        reply[:msg] = "Keys was uploaded!"
+      end
+
       action "download_access" do
         # downloads authorized_keys file for given user
         # returns error if file is not present
 
         begin
-          #check if authorized_keys file is present
+          # check if authorized_keys file is present
           reply.fail! "File #{authorized_keys_file} doesn't exist!" unless File.exist? authorized_keys_file
-          #read the file
+          # read the file
           authorized_keys = File.read authorized_keys_file
-          #and return it as string
+          # and return it as string
           reply[:authorized_keys] = authorized_keys
         rescue => e
           reply.fail! e.to_s
