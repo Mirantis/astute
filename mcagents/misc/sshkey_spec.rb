@@ -3,7 +3,7 @@ describe 'Sshkey' do
   describe 'generate_key action' do
     it 'generates ssh key' do
     end
-    context 'if key already present' do
+    context 'if keys already present' do
       it 'refuses to overwrite key'
       context 'if overwrite is enabled' do
         it 'forces key generation'
@@ -20,10 +20,20 @@ describe 'Sshkey' do
 
   describe 'upload_key action' do
     it 'uploads ssh key'
-    context 'if key already present' do
+    context 'if keys already present' do
       it 'refuses to overwrite key'
       context 'if overwrite enabled' do
         it 'forces key upload'
+      end
+    end
+  end
+
+  describe 'distribute_keys' do
+    it 'distributes ssh keys to given path'
+    context 'if keys already present ' do
+      it 'refuses to overwrite existing keys'
+      context 'if overwrite option enabled' do
+        it 'forces key distribution'
       end
     end
   end
