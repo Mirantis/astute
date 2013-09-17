@@ -15,7 +15,7 @@
 require 'json'
 
 class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
-  
+
   # Just merge attributes of concrete node
   # with attributes of cluster
   def create_facts(node_attrs)
@@ -48,13 +48,11 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
 
     nodes_to_deploy.each do |node|
       Astute::Metadata.publish_facts @ctx, node['uid'], create_facts(node)
-      #FIXME: Debug call
-      Astute.logger.error(create_facts(node))
     end
     Astute.logger.info "#{@ctx.task_id}: Required attrs/metadata passed via facts extension. Starting deployment."
 
     Astute::PuppetdDeployer.deploy(@ctx, nodes_to_deploy, retries, change_node_status)
-    
+
     nodes_roles = nodes_to_deploy.map { |n| {n['uid'] => n['role']} }
     Astute.logger.info "#{@ctx.task_id}: Finished deployment of nodes => roles: #{nodes_roles.inspect}"
   end
