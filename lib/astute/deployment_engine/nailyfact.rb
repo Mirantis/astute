@@ -19,7 +19,7 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
   # Just merge attributes of concrete node
   # with attributes of cluster
   def create_facts(node_attrs)
-    {'settings' => node_attrs.to_yaml}
+    node_attrs.to_yaml
   end
 
   def deploy_piece(nodes, retries=2, change_node_status=true)
@@ -41,7 +41,9 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
     end
 
     nodes_to_deploy.each do |node|
-      Astute::Metadata.publish_facts @ctx, node['uid'], create_facts(node)
+      #Astute::Metadata.publish_facts @ctx, node['uid'], create_facts(node)
+      upload_mclient = MClient.new(@ctx, "uploadfile", [node['uid']])
+      upload_mclient.upload(:path => '/etc/naily.facts', :content => create_facts(node), :overwrite => true, :parents => true)
     end
     Astute.logger.info "#{@ctx.task_id}: Required attrs/metadata passed via facts extension. Starting deployment."
 
