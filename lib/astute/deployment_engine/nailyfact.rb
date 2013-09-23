@@ -15,12 +15,6 @@
 require 'yaml'
 
 class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
-  
-  # Just merge attributes of concrete node
-  # with attributes of cluster
-  def create_facts(node_attrs)
-    node_attrs.to_yaml
-  end
 
   def deploy_piece(nodes, retries=2, change_node_status=true)
     return false unless validate_nodes(nodes)
@@ -31,20 +25,15 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
       return
     end
 
-    Astute.logger.info "#{@ctx.task_id}: Calculation of required attributes to pass, include netw.settings"
     @ctx.reporter.report(nodes_status(nodes_to_deploy, 'deploying', {'progress' => 0}))
 
     begin
       @ctx.deploy_log_parser.prepare(nodes_to_deploy)
-    rescue Exception => e
+    rescue => e
       Astute.logger.warn "Some error occurred when prepare LogParser: #{e.message}, trace: #{e.format_backtrace}"
     end
 
-    nodes_to_deploy.each do |node|
-      #Astute::Metadata.publish_facts @ctx, node['uid'], create_facts(node)
-      upload_mclient = MClient.new(@ctx, "uploadfile", [node['uid']])
-      upload_mclient.upload(:path => '/etc/naily.facts', :content => create_facts(node), :overwrite => true, :parents => true)
-    end
+    nodes_to_deploy.each { |node| upload_facts(node) }    
     Astute.logger.info "#{@ctx.task_id}: Required attrs/metadata passed via facts extension. Starting deployment."
 
     Astute::PuppetdDeployer.deploy(@ctx, nodes_to_deploy, retries, change_node_status)
@@ -54,6 +43,16 @@ class Astute::DeploymentEngine::NailyFact < Astute::DeploymentEngine
   end
 
   private
+  
+  def upload_facts(node)
+    Astute.logger.info  "#{@ctx.task_id}: storing metadata for node uid=#{node['uid']}"
+    Astute.logger.debug "#{@ctx.task_id}: stores metadata: #{node.to_yaml}"
+    
+    # This is synchronious RPC call, so we are sure that data were sent and processed remotely
+    upload_mclient = Astute::MClient.new(@ctx, "uploadfile", [node['uid']])
+    upload_mclient.upload(:path => '/etc/astute.yaml', :content => node.to_yaml, :overwrite => true, :parents => true)
+  end
+  
   def get_nodes_to_deploy(nodes)
     Astute.logger.info "#{@ctx.task_id}: Getting which nodes to deploy"
     nodes_to_deploy = []

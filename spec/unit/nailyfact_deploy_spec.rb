@@ -54,7 +54,7 @@ describe "NailyFact DeploymentEngine" do
       end
 
       it "should not raise any exception" do
-        Astute::Metadata.expects(:publish_facts).times(deploy_data.size)
+        @deploy_engine.expects(:upload_facts).times(deploy_data.size)
         
         uniq_nodes_uid = deploy_data.map {|n| n['uid'] }.uniq
         @deploy_engine.expects(:generate_and_upload_ssh_keys).with(%w(nova mysql ceph), uniq_nodes_uid, nil)
@@ -78,7 +78,7 @@ describe "NailyFact DeploymentEngine" do
       let(:node_amount) { deploy_data.size }
     
       it "should prepare log parsing for every deploy call because node may be deployed several times" do
-        Astute::Metadata.expects(:publish_facts).times(node_amount)
+        @deploy_engine.expects(:upload_facts).times(node_amount)
         @ctx.deploy_log_parser.expects(:prepare).with(compute_nodes).once
         @ctx.deploy_log_parser.expects(:prepare).with(cinder_nodes).once
         
@@ -92,7 +92,7 @@ describe "NailyFact DeploymentEngine" do
       it "should generate and publish facts for every deploy call because node may be deployed several times" do        
         @ctx.deploy_log_parser.expects(:prepare).with(compute_nodes).once
         @ctx.deploy_log_parser.expects(:prepare).with(cinder_nodes).once
-        Astute::Metadata.expects(:publish_facts).times(node_amount)
+        @deploy_engine.expects(:upload_facts).times(node_amount)
         
         uniq_nodes_uid = deploy_data.map {|n| n['uid'] }.uniq
         @deploy_engine.expects(:generate_and_upload_ssh_keys).with(%w(nova mysql ceph), uniq_nodes_uid, nil)
@@ -109,7 +109,7 @@ describe "NailyFact DeploymentEngine" do
       end
 
       it "ha deploy should not raise any exception" do
-        Astute::Metadata.expects(:publish_facts).at_least_once
+        @deploy_engine.expects(:upload_facts).at_least_once
         
         uniq_nodes_uid = deploy_data.map {|n| n['uid'] }.uniq
         @deploy_engine.expects(:generate_and_upload_ssh_keys).with(%w(nova mysql ceph), uniq_nodes_uid, nil)
@@ -126,7 +126,7 @@ describe "NailyFact DeploymentEngine" do
       end
 
       it "ha deploy should not raise any exception if there are only one controller" do
-        Astute::Metadata.expects(:publish_facts).at_least_once
+        @deploy_engine.expects(:upload_facts).at_least_once
         Astute::PuppetdDeployer.expects(:deploy).once
         
         ctrl = deploy_data.find { |n| n['role'] == 'controller' }
