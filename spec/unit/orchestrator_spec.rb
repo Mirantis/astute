@@ -290,7 +290,7 @@ describe Astute::Orchestrator do
                   { 'type' => "raid",
                     'mount' => "/boot",
                     'size' => 200 },
-                  { 'type' => "lvm_meta",
+                  { 'type' => "lvm_meta_pool",
                     'name' => "os",
                     'size' => 64 }
                 ]

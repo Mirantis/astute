@@ -315,7 +315,6 @@ module Astute
     private
     
     def validate_provision_attrs(engine_attrs, nodes, do_raise = true)
-      puts "engine_attrs #{engine_attrs}"
       Validator.new(:provision).validate_data({'engine' => engine_attrs, 'nodes' => nodes}, do_raise)
     end
     

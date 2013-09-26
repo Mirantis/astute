@@ -46,13 +46,14 @@ nodes:
         - type: "disk"
           id: "disk/by-path/pci-0000:00:0d.0-scsi-0:0:0:0"
           size: 16384
+          name: sda
           volumes:
             - type: "boot"
               size: 300
             - type: "raid"
               mount: "/boot"
               size: 200
-            - type: "lvm_meta"
+            - type: "lvm_meta_pool"
               name: "os"
               size: 64
             - type: "pv"

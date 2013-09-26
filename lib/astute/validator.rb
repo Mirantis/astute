@@ -31,7 +31,6 @@ module Astute
     end
     
     def validate_data(data, do_raise = true)
-      puts "###### DATA: #{data}"
       errors = validate(data)
       inspect_errors(errors, do_raise)
     end
