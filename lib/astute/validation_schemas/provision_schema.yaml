@@ -128,10 +128,14 @@ mapping:
                         type: text
                         required: true
                         unique: yes
+                      "free_space":
+                        type: int
                       "size":
                         type: int
                       "min_size":
                         type: int
+                      "name":
+                        type: text
                       "label":
                         type: text
                       "volumes":
@@ -142,12 +146,17 @@ mapping:
                               "type":
                                 type: text
                                 required: true
-                                enum: [lv, pv, partition, mbr, raid, lvm_meta, boot]
+                                enum: [lv, pv, partition, mbr, raid, lvm_meta_pool, boot]
                               "mount":
                                 type: text
                               "size":
                                 type: int
+                                required: true
+                              "lvm_meta_size":
+                                type: int
                               "vg":
+                                type: text
+                              "file_system":
                                 type: text
                               "name":
                                 type: text
