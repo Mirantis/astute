@@ -79,10 +79,10 @@ module Astute
     def watch_provision_progress(reporter, task_id, nodes)
       raise "Nodes to provision are not provided!" if nodes.empty?
 
-      provisionLogParser = @log_parsing ? LogParser::ParseProvisionLogs.new : LogParser::NoParsing.new
+      provision_log_parser = @log_parsing ? LogParser::ParseProvisionLogs.new : LogParser::NoParsing.new
       proxy_reporter = ProxyReporter::DeploymentProxyReporter.new(reporter)
 
-      prepare_logs_for_parsing(provisionLogParser, nodes)
+      prepare_logs_for_parsing(provision_log_parser, nodes)
 
       nodes_not_booted = nodes.map{ |n| n['uid'] }
       begin
@@ -99,7 +99,7 @@ module Astute
                 end
 
                 Astute.logger.debug("Nodes list length is not equal to target nodes list length: #{nodes.length} != #{target_uids.length}")
-                report_about_progress(proxy_reporter, provisionLogParser, target_uids, nodes)
+                report_about_progress(proxy_reporter, provision_log_parser, target_uids, nodes)
               end
             end
           end
@@ -207,11 +207,11 @@ module Astute
       reporter.report(status)
     end
 
-    def prepare_logs_for_parsing(provisionLogParser, nodes)
+    def prepare_logs_for_parsing(provision_log_parser, nodes)
       sleep_not_greater_than(10) do # Wait while nodes going to reboot
         Astute.logger.info "Starting OS provisioning for nodes: #{nodes.map{ |n| n['uid'] }.join(',')}"
         begin
-          provisionLogParser.prepare(nodes)
+          provision_log_parser.prepare(nodes)
         rescue => e
           Astute.logger.warn "Some error occurred when prepare LogParser: #{e.message}, trace: #{e.format_backtrace}"
         end
@@ -300,9 +300,9 @@ module Astute
       failed_nodes
     end
 
-    def report_about_progress(reporter, provisionLogParser, target_uids, nodes)
+    def report_about_progress(reporter, provision_log_parser, target_uids, nodes)
       begin
-        nodes_progress = provisionLogParser.progress_calculate(nodes.map{ |n| n['uid'] }, nodes)
+        nodes_progress = provision_log_parser.progress_calculate(nodes.map{ |n| n['uid'] }, nodes)
         nodes_progress.each do |n|
           if target_uids.include?(n['uid'])
             n['progress'] = 100
